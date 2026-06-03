@@ -57,14 +57,14 @@ service cloud.firestore {
 
       // Leer:
       // — Sin sesión: lectura pública para la bitácora
-      // — Con sesión: cada rol ve solo lo que le corresponde
+      // — Con sesión: cada rol ve lo que le corresponde (las directoras ven todo de forma colaborativa)
       allow read: if
         request.auth == null ||   // público (bitácora sin login)
         isAdmin() ||
-        (isJefe()               && resource.data.creadoPor == request.auth.uid) ||
-        (isDirectorMatutino()   && resource.data.turno == 'matutino') ||
-        (isDirectorVespertino() && resource.data.turno == 'vespertino') ||
-        isIntendencia();
+        isDirectorMatutino() ||   // colaborativo: ve reportes de ambos turnos
+        isDirectorVespertino() || // colaborativo: ve reportes de ambos turnos
+        isIntendencia() ||
+        (isJefe()               && resource.data.creadoPor == request.auth.uid);
 
       // Actualizar: intendencia, directoras y admin pueden cambiar estado y agregar fotos/notas de resolución
       allow update: if isAuth() && (

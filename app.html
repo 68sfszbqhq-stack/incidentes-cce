@@ -137,6 +137,11 @@
         <option value="en_atencion">En Atención</option>
         <option value="resuelto">Resuelto</option>
       </select>
+      <select class="form-select" id="filtroTurno" aria-label="Filtrar por turno">
+        <option value="">Todos los turnos</option>
+        <option value="matutino">🌅 Turno Matutino</option>
+        <option value="vespertino">🌇 Turno Vespertino</option>
+      </select>
       <select class="form-select" id="filtroUbicacion" aria-label="Filtrar por ubicación">
         <option value="">Todas las zonas</option>
         <option value="Salón 1°">Salón 1°</option>
@@ -592,8 +597,7 @@ function initDirectora(p) {
   document.getElementById('btnNuevoReporteDir').addEventListener('click', () => openModalNuevo());
 
   const q = query(
-    collection(db, 'reportes'),
-    where('turno', '==', turno)
+    collection(db, 'reportes')
   );
 
   if (unsubReportes) unsubReportes();
@@ -611,7 +615,7 @@ function initDirectora(p) {
   });
 
   // Filtros
-  ['filtroTipo','filtroEstado','filtroUbicacion','filtroFecha'].forEach(id => {
+  ['filtroTipo','filtroEstado','filtroTurno','filtroUbicacion','filtroFecha'].forEach(id => {
     document.getElementById(id).addEventListener('change', applyFiltersDirectora);
   });
 }
@@ -620,12 +624,14 @@ function applyFiltersDirectora() {
   let filtered = [...allReportes];
   const tipo      = document.getElementById('filtroTipo').value;
   const estado    = document.getElementById('filtroEstado').value;
+  const turnoFilter = document.getElementById('filtroTurno').value;
   const ubicacion = document.getElementById('filtroUbicacion').value;
   const fecha     = document.getElementById('filtroFecha').value;
 
-  if (tipo)      filtered = filtered.filter(r => r.tipo === tipo);
-  if (estado)    filtered = filtered.filter(r => r.estado === estado);
-  if (ubicacion) filtered = filtered.filter(r => r.ubicacion === ubicacion);
+  if (tipo)        filtered = filtered.filter(r => r.tipo === tipo);
+  if (estado)      filtered = filtered.filter(r => r.estado === estado);
+  if (turnoFilter) filtered = filtered.filter(r => r.turno === turnoFilter);
+  if (ubicacion)   filtered = filtered.filter(r => r.ubicacion === ubicacion);
 
   if (fecha) {
     const now  = new Date();
