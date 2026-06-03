@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myRole() {
+      return myProfile().role;
+    }
+
+    function isAdmin() {
+      return isAuth() && myRole() == 'admin';
+    }
+
+    function isDirectorMatutino() {
+      return isAuth() && myRole() == 'directora_matutino';
+    }
+
+    function isDirectorVespertino() {
+      return isAuth() && myRole() == 'directora_vespertino';
+    }
+
+    function isJefe() {
+      return isAuth() && myRole() == 'jefe_grupo';
+    }
+
+    function isIntendencia() {
+      return isAuth() && myRole() == 'intendencia';
+    }
+
+    // ── Colección: users ──────────────────────────────────────
+    match /users/{userId} {
+      // Cada usuario puede leer su propio perfil; admin ve todos
+      allow read: if isAuth() && (request.auth.uid == userId || isAdmin());
+      // Solo el admin puede crear/modificar perfiles (el setup script usa Admin SDK)
+      allow write: if isAdmin();
+    }
+
+    // ── Colección: reportes ───────────────────────────────────
+    match /reportes/{reporteId} {
+
+      // Crear: solo jefes de grupo y admin
+      allow create: if isAuth() && (isJefe() || isAdmin()) &&
+        // Validar campos obligatorios
+        request.resource.data.keys().hasAll(['tipo','categoria','ubicacion','descripcion','turno','estado','creadoPor','creadoEn']) &&
+        request.resource.data.tipo    in ['incidente','positivo'] &&
+        request.resource.data.estado  == 'pendiente' &&
+        // El jefe solo puede crear reportes de su propio turno
+        (isAdmin() || request.resource.data.creadoPor == request.auth.uid);
+
+      // Leer:
+      allow read: if isAuth() && (
+        isAdmin() ||
+        // Jefe: solo sus propios reportes
+        (isJefe()             && resource.data.creadoPor == request.auth.uid) ||
+        // Directora matutino: solo reportes del turno matutino
+        (isDirectorMatutino() && resource.data.turno == 'matutino') ||
+        // Directora vespertino: solo reportes del turno vespertino
+        (isDirectorVespertino() && resource.data.turno == 'vespertino') ||
+        // Intendencia: todos los reportes
+        isIntendencia()
+      );
+
+      // Actualizar: intendencia puede cambiar estado y agregar fotos/notas de resolución
+      allow update: if isAuth() && (
+        isAdmin() ||
+        (isIntendencia() &&
+          // Solo puede modificar estos campos
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['estado','fotosResolucion','notasResolucion','actualizadoEn',
+                      'resueltoPor','resueltoPorNombre','atendidoPor','atendidoPorNombre']) &&
+          // El estado solo puede avanzar: pendiente → en_atencion → resuelto
+          request.resource.data.estado in ['en_atencion','resuelto']
+        )
+      );
+
+      // Eliminar: solo admin
+      allow delete: if isAdmin();
+    }
+  }
+}

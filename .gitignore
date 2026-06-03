@@ -1,0 +1,17 @@
+# Archivos a ignorar por Git
+
+# Clave privada de Firebase Admin (¡NUNCA subir a GitHub!)
+setup/serviceAccountKey.json
+
+# Node modules del script de setup
+setup/node_modules/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

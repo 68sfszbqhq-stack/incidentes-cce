@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Fotos de reportes ─────────────────────────────────────
+    match /reportes/{fileName} {
+      // Cualquier usuario autenticado puede leer y subir fotos de reporte
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 15 * 1024 * 1024   // máx 15 MB
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Fotos de resolución (intendencia) ─────────────────────
+    match /resoluciones/{reporteId}/{fileName} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+        && request.resource.size < 15 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

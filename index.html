@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión — C.C. Carlos Camacho Espíritu</title>
+  <meta name="description" content="Plataforma de reportes de incidentes del plantel Carlos Camacho Espíritu. Inicia sesión para continuar." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-page">
+
+  <!-- Decoración de fondo -->
+  <div class="login-bg" aria-hidden="true"></div>
+  <div class="login-grid" aria-hidden="true"></div>
+
+  <!-- Tarjeta de login -->
+  <main>
+    <div class="login-card glass-card" role="main">
+
+      <!-- Logo y nombre -->
+      <div class="login-logo">
+        <div class="login-logo-icon" aria-hidden="true">🏫</div>
+        <div>
+          <h1 class="login-school-name">Carlos Camacho Espíritu</h1>
+          <p class="login-subtitle">Sistema de Reportes de Incidentes</p>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="form-group">
+          <label for="loginEmail" class="form-label">Correo electrónico</label>
+          <input
+            type="email"
+            id="loginEmail"
+            name="email"
+            class="form-input"
+            placeholder="usuario@escuela.edu.mx"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword" class="form-label">Contraseña</label>
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              id="togglePw"
+              class="toggle-pw"
+              aria-label="Mostrar u ocultar contraseña"
+            >👁</button>
+          </div>
+        </div>
+
+        <!-- Mensajes de feedback -->
+        <div id="loginFeedback" class="hidden" role="alert"></div>
+
+        <!-- Botón login -->
+        <button type="submit" id="loginBtn" class="btn btn-primary btn-full btn-lg">
+          <span id="loginBtnLabel">Iniciar Sesión</span>
+          <span id="loginBtnSpinner" class="spinner hidden" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <!-- Forgot password -->
+      <div class="login-footer">
+        <a href="#" id="forgotLink" role="button">¿Olvidaste tu contraseña?</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp }          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      sendPasswordResetEmail
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { firebaseConfig } from './js/firebase-config.js';
+
+    // ── Init ──────────────────────────────────────────────
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Si ya está autenticado, redirigir
+    onAuthStateChanged(auth, user => {
+      if (user) window.location.replace('app.html');
+    });
+
+    // ── DOM refs ──────────────────────────────────────────
+    const form       = document.getElementById('loginForm');
+    const emailInput = document.getElementById('loginEmail');
+    const pwInput    = document.getElementById('loginPassword');
+    const toggleBtn  = document.getElementById('togglePw');
+    const feedback   = document.getElementById('loginFeedback');
+    const loginBtn   = document.getElementById('loginBtn');
+    const btnLabel   = document.getElementById('loginBtnLabel');
+    const btnSpinner = document.getElementById('loginBtnSpinner');
+    const forgotLink = document.getElementById('forgotLink');
+
+    // ── Toggle password visibility ─────────────────────────
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = pwInput.type === 'password';
+      pwInput.type   = isHidden ? 'text' : 'password';
+      toggleBtn.textContent = isHidden ? '🙈' : '👁';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+
+    // ── Show feedback ──────────────────────────────────────
+    function showError(msg) {
+      feedback.className = 'error-message';
+      feedback.textContent = msg;
+      feedback.classList.remove('hidden');
+    }
+    function showSuccess(msg) {
+      feedback.className = 'success-message';
+      feedback.textContent = msg;
+      feedback.classList.remove('hidden');
+    }
+
+    // ── Set loading state ──────────────────────────────────
+    function setLoading(loading) {
+      loginBtn.disabled = loading;
+      btnLabel.textContent = loading ? 'Iniciando…' : 'Iniciar Sesión';
+      btnSpinner.classList.toggle('hidden', !loading);
+    }
+
+    // ── Login ──────────────────────────────────────────────
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      feedback.classList.add('hidden');
+
+      const email    = emailInput.value.trim();
+      const password = pwInput.value;
+
+      if (!email || !password) {
+        showError('Ingresa tu correo y contraseña.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.replace('app.html');
+      } catch (err) {
+        const msgs = {
+          'auth/user-not-found':         'Usuario no encontrado. Verifica el correo.',
+          'auth/wrong-password':         'Contraseña incorrecta.',
+          'auth/invalid-credential':     'Credenciales inválidas. Verifica tus datos.',
+          'auth/invalid-email':          'El formato del correo no es válido.',
+          'auth/user-disabled':          'Esta cuenta ha sido desactivada.',
+          'auth/too-many-requests':      'Demasiados intentos. Espera unos minutos.',
+          'auth/network-request-failed': 'Error de red. Verifica tu conexión a internet.',
+        };
+        showError(msgs[err.code] || 'Error al iniciar sesión. Intenta de nuevo.');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // ── Forgot password ────────────────────────────────────
+    forgotLink.addEventListener('click', async e => {
+      e.preventDefault();
+      feedback.classList.add('hidden');
+
+      const email = emailInput.value.trim();
+      if (!email) {
+        showError('Escribe tu correo electrónico primero.');
+        emailInput.focus();
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showSuccess('✅ Se envió un enlace a ' + email + '. Revisa tu bandeja de entrada.');
+      } catch (err) {
+        if (err.code === 'auth/user-not-found') {
+          showError('No existe una cuenta con ese correo.');
+        } else {
+          showError('No se pudo enviar el correo. Verifica la dirección.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

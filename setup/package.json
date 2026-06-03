@@ -1,0 +1,15 @@
+{
+  "name": "setup-usuarios-ccespiritu",
+  "version": "1.0.0",
+  "description": "Script de configuración inicial de usuarios — C.C. Carlos Camacho Espíritu",
+  "main": "setup-usuarios.js",
+  "scripts": {
+    "setup": "node setup-usuarios.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

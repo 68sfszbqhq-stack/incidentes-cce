@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Reportes — C.C. Carlos Camacho Espíritu</title>
+  <meta name="description" content="Panel principal de reportes de incidentes del plantel Carlos Camacho Espíritu." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏫</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app-layout">
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA DE CARGA
+═══════════════════════════════════════════════ -->
+<div id="loadingScreen">
+  <div class="loading-logo" aria-hidden="true">🏫</div>
+  <p class="loading-text">Cargando plataforma…</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════ -->
+<header class="app-header hidden" id="appHeader">
+  <div class="header-brand">
+    <div class="header-brand-icon" aria-hidden="true">🏫</div>
+    <div class="header-title">
+      Reportes CCE
+      <span>Carlos Camacho Espíritu</span>
+    </div>
+  </div>
+  <div class="header-user">
+    <div class="header-user-info">
+      <div class="header-user-name" id="hdrName">—</div>
+      <div class="header-user-badge" id="hdrRole">—</div>
+    </div>
+    <div class="header-avatar" id="hdrAvatar" aria-hidden="true">?</div>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn" aria-label="Cerrar sesión">
+      <span aria-hidden="true">⏻</span>
+      <span class="sr-only">Salir</span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     CONTENIDO PRINCIPAL
+═══════════════════════════════════════════════ -->
+<main class="app-main hidden" id="appMain">
+
+  <!-- ┌─────────────────────────────────────────────
+       │ PANEL: JEFE DE GRUPO
+       └───────────────────────────────────────────── -->
+  <section id="panelJefe" class="hidden">
+    <div class="panel-hero">
+      <div class="panel-hero-top">
+        <div>
+          <h2 class="panel-title" id="jefeTitle">Mis Reportes</h2>
+          <p class="panel-subtitle" id="jefeSubtitle">Turno — Grupo —</p>
+        </div>
+        <button class="btn btn-primary" id="btnNuevoReporte">
+          <span aria-hidden="true">＋</span> Nuevo Reporte
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="jefeStats">
+      <div class="stat-card total">
+        <div class="stat-value" id="jSTotal">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-value" id="jSPend">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card atencion">
+        <div class="stat-value" id="jSAten">0</div>
+        <div class="stat-label">En Atención</div>
+      </div>
+      <div class="stat-card resuelto">
+        <div class="stat-value" id="jSRes">0</div>
+        <div class="stat-label">Resueltos</div>
+      </div>
+    </div>
+
+    <!-- Lista de reportes -->
+    <div id="jefeReportesList" class="reportes-list"></div>
+  </section>
+
+  <!-- ┌─────────────────────────────────────────────
+       │ PANEL: DIRECTORA
+       └───────────────────────────────────────────── -->
+  <section id="panelDirectora" class="hidden">
+    <div class="panel-hero">
+      <div class="panel-hero-top">
+        <div>
+          <h2 class="panel-title" id="dirTitle">Panel Directora</h2>
+          <p class="panel-subtitle" id="dirSubtitle">Turno —</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-value" id="dSTotal">0</div>
+        <div class="stat-label">Total reportes</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-value" id="dSPend">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card atencion">
+        <div class="stat-value" id="dSAten">0</div>
+        <div class="stat-label">En Atención</div>
+      </div>
+      <div class="stat-card resuelto">
+        <div class="stat-value" id="dSRes">0</div>
+        <div class="stat-label">Resueltos</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar" role="search" aria-label="Filtros de reportes">
+      <select class="form-select" id="filtroTipo" aria-label="Filtrar por tipo">
+        <option value="">Todos los tipos</option>
+        <option value="incidente">🔴 Incidente</option>
+        <option value="positivo">🟢 Positivo</option>
+      </select>
+      <select class="form-select" id="filtroEstado" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="en_atencion">En Atención</option>
+        <option value="resuelto">Resuelto</option>
+      </select>
+      <select class="form-select" id="filtroUbicacion" aria-label="Filtrar por ubicación">
+        <option value="">Todas las zonas</option>
+        <option value="Salón 1°">Salón 1°</option>
+        <option value="Salón 2°">Salón 2°</option>
+        <option value="Salón 3°">Salón 3°</option>
+        <option value="Baños">Baños</option>
+        <option value="Canchas">Canchas</option>
+        <option value="Mesas / Comedor">Mesas / Comedor</option>
+        <option value="Pasillos">Pasillos</option>
+        <option value="Patio General">Patio General</option>
+      </select>
+      <select class="form-select" id="filtroFecha" aria-label="Filtrar por fecha">
+        <option value="">Cualquier fecha</option>
+        <option value="hoy">Hoy</option>
+        <option value="semana">Esta semana</option>
+        <option value="mes">Este mes</option>
+      </select>
+    </div>
+
+    <div id="dirReportesList" class="reportes-list"></div>
+  </section>
+
+  <!-- ┌─────────────────────────────────────────────
+       │ PANEL: INTENDENCIA
+       └───────────────────────────────────────────── -->
+  <section id="panelIntendencia" class="hidden">
+    <div class="panel-hero">
+      <div class="panel-hero-top">
+        <div>
+          <h2 class="panel-title" id="intTitle">Panel Intendencia</h2>
+          <p class="panel-subtitle">Gestiona y resuelve los reportes del plantel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-nav" role="tablist" aria-label="Secciones de reportes">
+      <button class="tab-btn active" role="tab" aria-selected="true"
+        data-tab="pendientes" id="tabPend">
+        Pendientes <span class="tab-count" id="cntPend">0</span>
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        data-tab="en_atencion" id="tabAten">
+        En Atención <span class="tab-count" id="cntAten">0</span>
+      </button>
+      <button class="tab-btn" role="tab" aria-selected="false"
+        data-tab="resueltos" id="tabRes">
+        Resueltos <span class="tab-count" id="cntRes">0</span>
+      </button>
+    </div>
+
+    <div id="intReportesPend" class="reportes-list" role="tabpanel"></div>
+    <div id="intReportesAten" class="reportes-list hidden" role="tabpanel"></div>
+    <div id="intReportesRes"  class="reportes-list hidden" role="tabpanel"></div>
+  </section>
+
+  <!-- ┌─────────────────────────────────────────────
+       │ PANEL: ADMIN
+       └───────────────────────────────────────────── -->
+  <section id="panelAdmin" class="hidden">
+    <div class="panel-hero">
+      <div class="panel-hero-top">
+        <div>
+          <h2 class="panel-title">Panel Administrador</h2>
+          <p class="panel-subtitle">Vista global de todos los reportes — Ambos turnos</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-value" id="aSTotal">0</div>
+        <div class="stat-label">Total global</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-value" id="aSPend">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card atencion">
+        <div class="stat-value" id="aSAten">0</div>
+        <div class="stat-label">En Atención</div>
+      </div>
+      <div class="stat-card resuelto">
+        <div class="stat-value" id="aSRes">0</div>
+        <div class="stat-label">Resueltos</div>
+      </div>
+    </div>
+
+    <div id="adminReportesList" class="reportes-list"></div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: NUEVO REPORTE
+═══════════════════════════════════════════════ -->
+<div id="modalNuevo" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalNuevoTitle">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalNuevoTitle">📝 Nuevo Reporte</h3>
+      <button class="modal-close" id="closeModalNuevo" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNuevo" class="modal-body-form" novalidate>
+
+        <!-- Paso 1: Tipo -->
+        <div class="form-group">
+          <span class="form-label">¿Qué tipo de reporte es?</span>
+          <div class="tipo-selector">
+            <button type="button" class="tipo-btn" id="tipoIncidente" data-tipo="incidente">
+              <span class="tipo-icon">🔴</span>
+              <span>Incidente</span>
+              <small style="font-weight:400;color:inherit;opacity:.8;font-size:.7rem">Problema o daño</small>
+            </button>
+            <button type="button" class="tipo-btn" id="tipoPositivo" data-tipo="positivo">
+              <span class="tipo-icon">🟢</span>
+              <span>Positivo</span>
+              <small style="font-weight:400;color:inherit;opacity:.8;font-size:.7rem">Condición buena</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Categoría -->
+        <div class="form-group">
+          <span class="form-label">Categoría</span>
+          <div class="categoria-grid" id="categoriaGrid">
+            <button type="button" class="cat-btn" data-cat="mobiliario">
+              <span class="cat-icon">🪑</span><span>Mobiliario</span>
+            </button>
+            <button type="button" class="cat-btn" data-cat="bano">
+              <span class="cat-icon">🚽</span><span>Baño</span>
+            </button>
+            <button type="button" class="cat-btn" data-cat="salon">
+              <span class="cat-icon">🏫</span><span>Salón</span>
+            </button>
+            <button type="button" class="cat-btn" data-cat="pasillo">
+              <span class="cat-icon">🚶</span><span>Pasillo</span>
+            </button>
+            <button type="button" class="cat-btn" data-cat="cancha">
+              <span class="cat-icon">🏟️</span><span>Cancha</span>
+            </button>
+            <button type="button" class="cat-btn" data-cat="patio">
+              <span class="cat-icon">🌳</span><span>Patio / Área común</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 3: Ubicación -->
+        <div class="form-group">
+          <label for="selectUbicacion" class="form-label">Ubicación exacta</label>
+          <select id="selectUbicacion" class="form-select" required>
+            <option value="">— Selecciona zona —</option>
+            <optgroup label="Salones">
+              <option value="Salón 1°">Salón 1°</option>
+              <option value="Salón 2°">Salón 2°</option>
+              <option value="Salón 3°">Salón 3°</option>
+            </optgroup>
+            <optgroup label="Espacios comunes">
+              <option value="Baños">Baños generales</option>
+              <option value="Canchas">Canchas / Área deportiva</option>
+              <option value="Mesas / Comedor">Mesas / Comedor</option>
+              <option value="Pasillos">Pasillos</option>
+              <option value="Patio General">Patio general</option>
+              <option value="Entrada / Acceso">Entrada / Acceso</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Paso 4: Descripción -->
+        <div class="form-group">
+          <label for="txtDescripcion" class="form-label">Descripción del reporte</label>
+          <textarea
+            id="txtDescripcion"
+            class="form-textarea"
+            placeholder="Describe brevemente el incidente o la condición positiva que encontraste…"
+            rows="3"
+            maxlength="500"
+            required
+          ></textarea>
+        </div>
+
+        <!-- Paso 5: Fotos -->
+        <div class="form-group">
+          <span class="form-label">Fotos de evidencia <span style="color:var(--text-muted);font-weight:400">(opcional, máx. 5)</span></span>
+          <div class="foto-upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept="image/*" capture="environment" multiple hidden />
+            <div class="foto-upload-icon" aria-hidden="true">📷</div>
+            <div class="foto-upload-text">Toca para tomar foto o seleccionar imágenes</div>
+            <div class="foto-upload-hint">JPG, PNG, HEIC · Máx. 10 MB por foto</div>
+          </div>
+          <div class="foto-previews" id="fotoPreviews"></div>
+        </div>
+
+        <!-- Error -->
+        <div id="nuevoError" class="hidden"></div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" id="cancelNuevo">Cancelar</button>
+      <button type="submit" form="formNuevo" class="btn btn-primary" id="submitNuevo">
+        <span id="submitNuevoLabel">Enviar Reporte</span>
+        <span id="submitNuevoSpinner" class="spinner hidden" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: VER REPORTE
+═══════════════════════════════════════════════ -->
+<div id="modalVer" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalVerTitle">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalVerTitle">Detalle del Reporte</h3>
+      <button class="modal-close" id="closeModalVer" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="modalVerBody">
+      <!-- Se llena dinámicamente -->
+    </div>
+    <div class="modal-footer" id="modalVerFooter">
+      <button type="button" class="btn btn-ghost" id="closeModalVer2">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     LIGHTBOX (vista completa de foto)
+═══════════════════════════════════════════════ -->
+<div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Vista de imagen">
+  <button class="lightbox-close" id="closeLightbox" aria-label="Cerrar imagen">✕</button>
+  <img id="lightboxImg" src="" alt="Evidencia fotográfica" />
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TOAST CONTAINER
+═══════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container" role="status" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════
+     APP SCRIPT
+═══════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {
+  getFirestore, collection, doc, addDoc, getDoc,
+  onSnapshot, query, where, orderBy, updateDoc, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { firebaseConfig } from './js/firebase-config.js';
+
+// ── Inicializar Firebase ───────────────────────────────────
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+// ── Google Apps Script — URL del subidor de fotos a Drive ──
+// Pega aquí la URL de tu implementación de Apps Script
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRu-xe6gmoHuiznmvTg1GmscPXRXHXmI0xHhPpxzDgPd2sU_B4tgw52I2KhXpNzBsa/exec';
+
+/**
+ * Convierte un File a base64 puro (sin el prefijo data:...)
+ */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Sube una foto a Google Drive vía Apps Script.
+ * Retorna la URL de previsualización (apta para <img src>).
+ */
+async function uploadToDrive(file, subcarpeta = 'evidencias') {
+  const base64 = await fileToBase64(file);
+  const safeName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+  const response = await fetch(APPS_SCRIPT_URL, {
+    method:  'POST',
+    // text/plain evita el preflight CORS y Apps Script lo acepta
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      data:        base64,
+      mimeType:    file.type || 'image/jpeg',
+      fileName:    safeName,
+      subcarpeta,
+    }),
+  });
+
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  const result = await response.json();
+  if (!result.success) throw new Error(result.error || 'Error desconocido en Apps Script');
+  return result.imgUrl;  // URL de thumbnail de Drive apta para <img>
+}
+
+// ── Estado global ──────────────────────────────────────────
+let currentUser     = null;
+let currentProfile  = null;
+let unsubReportes   = null;
+let allReportes     = [];  // caché para filtros directora
+let selectedTipo    = null;
+let selectedCat     = null;
+let fotoFiles       = [];
+let activeTab       = 'pendientes';
+
+// ── Constantes ─────────────────────────────────────────────
+const ROLES = {
+  jefe_grupo:          '👨‍🏫 Jefe de Grupo',
+  directora_matutino:  '🌅 Directora Matutino',
+  directora_vespertino:'🌇 Directora Vespertino',
+  intendencia:         '🧹 Intendencia',
+  admin:               '⚙️ Administrador',
+};
+
+const ESTADOS = {
+  pendiente:   { label: 'Pendiente',   cls: 'badge-pendiente' },
+  en_atencion: { label: 'En Atención', cls: 'badge-en_atencion' },
+  resuelto:    { label: 'Resuelto',    cls: 'badge-resuelto' },
+};
+
+const CATEGORIAS = {
+  mobiliario: '🪑 Mobiliario',
+  bano:       '🚽 Baño',
+  salon:      '🏫 Salón',
+  pasillo:    '🚶 Pasillo',
+  cancha:     '🏟️ Cancha',
+  patio:      '🌳 Patio / Área común',
+};
+
+// ══════════════════════════════════════════════════════════════
+// AUTH STATE
+// ══════════════════════════════════════════════════════════════
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    window.location.replace('index.html');
+    return;
+  }
+  currentUser = user;
+
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) {
+      await signOut(auth);
+      window.location.replace('index.html');
+      return;
+    }
+    currentProfile = { uid: user.uid, ...snap.data() };
+    bootApp();
+  } catch (err) {
+    console.error('Error cargando perfil:', err);
+    showToast('Error al cargar tu perfil. Recarga la página.', 'error');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// BOOT APP
+// ══════════════════════════════════════════════════════════════
+function bootApp() {
+  const p = currentProfile;
+
+  // Actualizar header
+  const initials = p.name ? p.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : '?';
+  document.getElementById('hdrName').textContent    = p.name || 'Usuario';
+  document.getElementById('hdrRole').textContent    = ROLES[p.role] || p.role;
+  document.getElementById('hdrAvatar').textContent  = initials;
+
+  // Mostrar layout
+  document.getElementById('loadingScreen').classList.add('hidden');
+  document.getElementById('appHeader').classList.remove('hidden');
+  document.getElementById('appMain').classList.remove('hidden');
+
+  // Mostrar panel según rol
+  hideAllPanels();
+  switch (p.role) {
+    case 'jefe_grupo':
+      initJefe(p);
+      break;
+    case 'directora_matutino':
+    case 'directora_vespertino':
+      initDirectora(p);
+      break;
+    case 'intendencia':
+      initIntendencia(p);
+      break;
+    case 'admin':
+      initAdmin(p);
+      break;
+    default:
+      showToast('Rol no reconocido. Contacta al administrador.', 'error');
+  }
+}
+
+function hideAllPanels() {
+  ['panelJefe','panelDirectora','panelIntendencia','panelAdmin'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL: JEFE DE GRUPO
+// ══════════════════════════════════════════════════════════════
+function initJefe(p) {
+  document.getElementById('panelJefe').classList.remove('hidden');
+  document.getElementById('jefeTitle').textContent    = `Mis Reportes`;
+  document.getElementById('jefeSubtitle').textContent = `${p.turno === 'matutino' ? '🌅 Turno Matutino' : '🌇 Turno Vespertino'} · Grupo ${p.grupo || '—'}`;
+
+  const q = query(
+    collection(db, 'reportes'),
+    where('creadoPor', '==', p.uid),
+    orderBy('creadoEn', 'desc')
+  );
+
+  if (unsubReportes) unsubReportes();
+  unsubReportes = onSnapshot(q, snap => {
+    const reportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Stats
+    document.getElementById('jSTotal').textContent = reportes.length;
+    document.getElementById('jSPend').textContent  = reportes.filter(r => r.estado === 'pendiente').length;
+    document.getElementById('jSAten').textContent  = reportes.filter(r => r.estado === 'en_atencion').length;
+    document.getElementById('jSRes').textContent   = reportes.filter(r => r.estado === 'resuelto').length;
+    // Lista
+    renderReportesList('jefeReportesList', reportes, 'jefe');
+  }, err => {
+    console.error('Error cargando reportes:', err);
+    if (err.code === 'permission-denied') {
+      document.getElementById('jefeReportesList').innerHTML =
+        emptyState('🔒', 'Sin permisos', 'Las reglas de Firestore no están configuradas aún. Sigue los pasos del README.');
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL: DIRECTORA
+// ══════════════════════════════════════════════════════════════
+function initDirectora(p) {
+  document.getElementById('panelDirectora').classList.remove('hidden');
+  const turno = p.role === 'directora_matutino' ? 'matutino' : 'vespertino';
+  const emoji  = turno === 'matutino' ? '🌅' : '🌇';
+  document.getElementById('dirTitle').textContent    = `Panel Directora`;
+  document.getElementById('dirSubtitle').textContent = `${emoji} Turno ${turno.charAt(0).toUpperCase() + turno.slice(1)}`;
+
+  const q = query(
+    collection(db, 'reportes'),
+    where('turno', '==', turno),
+    orderBy('creadoEn', 'desc')
+  );
+
+  if (unsubReportes) unsubReportes();
+  unsubReportes = onSnapshot(q, snap => {
+    allReportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    applyFiltersDirectora();
+  }, err => {
+    console.error(err);
+  });
+
+  // Filtros
+  ['filtroTipo','filtroEstado','filtroUbicacion','filtroFecha'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFiltersDirectora);
+  });
+}
+
+function applyFiltersDirectora() {
+  let filtered = [...allReportes];
+  const tipo      = document.getElementById('filtroTipo').value;
+  const estado    = document.getElementById('filtroEstado').value;
+  const ubicacion = document.getElementById('filtroUbicacion').value;
+  const fecha     = document.getElementById('filtroFecha').value;
+
+  if (tipo)      filtered = filtered.filter(r => r.tipo === tipo);
+  if (estado)    filtered = filtered.filter(r => r.estado === estado);
+  if (ubicacion) filtered = filtered.filter(r => r.ubicacion === ubicacion);
+
+  if (fecha) {
+    const now  = new Date();
+    const hoy  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lun  = new Date(hoy); lun.setDate(hoy.getDate() - hoy.getDay() + 1);
+    const mes  = new Date(now.getFullYear(), now.getMonth(), 1);
+    filtered = filtered.filter(r => {
+      if (!r.creadoEn) return false;
+      const d = r.creadoEn.toDate ? r.creadoEn.toDate() : new Date(r.creadoEn);
+      if (fecha === 'hoy')    return d >= hoy;
+      if (fecha === 'semana') return d >= lun;
+      if (fecha === 'mes')    return d >= mes;
+      return true;
+    });
+  }
+
+  // Stats
+  document.getElementById('dSTotal').textContent = filtered.length;
+  document.getElementById('dSPend').textContent  = filtered.filter(r => r.estado === 'pendiente').length;
+  document.getElementById('dSAten').textContent  = filtered.filter(r => r.estado === 'en_atencion').length;
+  document.getElementById('dSRes').textContent   = filtered.filter(r => r.estado === 'resuelto').length;
+
+  renderReportesList('dirReportesList', filtered, 'directora');
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL: INTENDENCIA
+// ══════════════════════════════════════════════════════════════
+function initIntendencia(p) {
+  document.getElementById('panelIntendencia').classList.remove('hidden');
+
+  const q = query(
+    collection(db, 'reportes'),
+    orderBy('creadoEn', 'desc')
+  );
+
+  if (unsubReportes) unsubReportes();
+  unsubReportes = onSnapshot(q, snap => {
+    const reportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const pend = reportes.filter(r => r.estado === 'pendiente');
+    const aten = reportes.filter(r => r.estado === 'en_atencion');
+    const res  = reportes.filter(r => r.estado === 'resuelto');
+
+    document.getElementById('cntPend').textContent = pend.length;
+    document.getElementById('cntAten').textContent = aten.length;
+    document.getElementById('cntRes').textContent  = res.length;
+
+    renderReportesList('intReportesPend', pend, 'intendencia');
+    renderReportesList('intReportesAten', aten, 'intendencia');
+    renderReportesList('intReportesRes',  res,  'intendencia');
+  }, err => {
+    console.error(err);
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected','false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected','true');
+      activeTab = btn.dataset.tab;
+      ['intReportesPend','intReportesAten','intReportesRes'].forEach(id =>
+        document.getElementById(id).classList.add('hidden')
+      );
+      const tabMap = { pendientes:'intReportesPend', en_atencion:'intReportesAten', resueltos:'intReportesRes' };
+      document.getElementById(tabMap[activeTab]).classList.remove('hidden');
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL: ADMIN
+// ══════════════════════════════════════════════════════════════
+function initAdmin(p) {
+  document.getElementById('panelAdmin').classList.remove('hidden');
+  const q = query(collection(db, 'reportes'), orderBy('creadoEn', 'desc'));
+
+  if (unsubReportes) unsubReportes();
+  unsubReportes = onSnapshot(q, snap => {
+    const reportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('aSTotal').textContent = reportes.length;
+    document.getElementById('aSPend').textContent  = reportes.filter(r => r.estado === 'pendiente').length;
+    document.getElementById('aSAten').textContent  = reportes.filter(r => r.estado === 'en_atencion').length;
+    document.getElementById('aSRes').textContent   = reportes.filter(r => r.estado === 'resuelto').length;
+    renderReportesList('adminReportesList', reportes, 'admin');
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER: LISTA DE REPORTES
+// ══════════════════════════════════════════════════════════════
+function renderReportesList(containerId, reportes, role) {
+  const el = document.getElementById(containerId);
+  if (reportes.length === 0) {
+    el.innerHTML = emptyState('📋', 'Sin reportes', 'No hay reportes en esta categoría por el momento.');
+    return;
+  }
+
+  el.innerHTML = reportes.map(r => reporteCard(r, role)).join('');
+
+  // Eventos de click
+  el.querySelectorAll('.reporte-card').forEach(card => {
+    card.addEventListener('click', () => openModalVer(card.dataset.id));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') openModalVer(card.dataset.id);
+    });
+  });
+}
+
+function reporteCard(r, role) {
+  const estado = ESTADOS[r.estado] || { label: r.estado, cls: '' };
+  const turnoLabel = r.turno === 'matutino' ? '🌅 Matutino' : '🌇 Vespertino';
+  const cat    = CATEGORIAS[r.categoria] || r.categoria;
+  const fecha  = r.creadoEn ? formatDate(r.creadoEn) : '—';
+  const fotos  = r.fotos || [];
+
+  let thumbsHtml = '';
+  if (fotos.length > 0) {
+    const visible = fotos.slice(0, 3);
+    const extra   = fotos.length - 3;
+    thumbsHtml = `<div class="reporte-thumb">
+      ${visible.map(u => `<img src="${u}" alt="Evidencia" loading="lazy"/>`).join('')}
+      ${extra > 0 ? `<div class="reporte-thumb-more">+${extra}</div>` : ''}
+    </div>`;
+  }
+
+  const showTurno = (role === 'intendencia' || role === 'admin');
+
+  return `
+    <article class="reporte-card ${r.tipo}" data-id="${r.id}"
+      tabindex="0" role="button" aria-label="Ver reporte: ${r.ubicacion}">
+      <div class="reporte-card-top">
+        <div class="reporte-card-badges">
+          <span class="badge ${r.tipo === 'incidente' ? 'badge-incidente' : 'badge-positivo'}">
+            ${r.tipo === 'incidente' ? '🔴 Incidente' : '🟢 Positivo'}
+          </span>
+          <span class="badge ${estado.cls}">${estado.label}</span>
+          ${showTurno ? `<span class="badge badge-${r.turno}">${turnoLabel}</span>` : ''}
+        </div>
+        <span style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">${fecha}</span>
+      </div>
+      <div class="reporte-card-title">${escHtml(r.ubicacion)} · <span style="opacity:.7">${cat}</span></div>
+      <div class="reporte-card-desc">${escHtml(r.descripcion)}</div>
+      ${thumbsHtml}
+      <div class="reporte-card-footer">
+        <div class="reporte-card-meta">
+          <span>👤 ${escHtml(r.creadoPorNombre || '—')}</span>
+          ${r.creadoPorGrupo ? `<span>· Grupo ${escHtml(r.creadoPorGrupo)}</span>` : ''}
+        </div>
+        <span style="font-size:.8rem;color:var(--primary-light);">Ver detalle →</span>
+      </div>
+    </article>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL: VER REPORTE
+// ══════════════════════════════════════════════════════════════
+async function openModalVer(reporteId) {
+  const snap = await getDoc(doc(db, 'reportes', reporteId));
+  if (!snap.exists()) { showToast('Reporte no encontrado.', 'error'); return; }
+  const r = { id: snap.id, ...snap.data() };
+
+  const estado   = ESTADOS[r.estado] || { label: r.estado, cls: '' };
+  const cat      = CATEGORIAS[r.categoria] || r.categoria;
+  const turnoLbl = r.turno === 'matutino' ? '🌅 Matutino' : '🌇 Vespertino';
+  const fecha    = r.creadoEn ? formatDate(r.creadoEn, true) : '—';
+  const fotos    = r.fotos || [];
+  const fotosRes = r.fotosResolucion || [];
+
+  // Timeline de estados
+  const steps = ['pendiente','en_atencion','resuelto'];
+  const curIdx = steps.indexOf(r.estado);
+  const timelineHtml = `
+    <div class="status-timeline" aria-label="Estado del reporte">
+      ${steps.map((s, i) => `
+        ${i > 0 ? `<div class="status-connector ${i <= curIdx ? 'done' : ''}"></div>` : ''}
+        <div class="status-step ${i < curIdx ? 'done' : i === curIdx ? 'current' : ''}">
+          <div class="status-step-dot">${i < curIdx ? '✓' : i === curIdx ? '●' : '○'}</div>
+          <div class="status-step-label">${ESTADOS[s].label}</div>
+        </div>`).join('')}
+    </div>`;
+
+  // Fotos de reporte
+  const fotosHtml = fotos.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">📷 Fotos de evidencia</div>
+      <div class="detail-photo-grid">
+        ${fotos.map(u => `
+          <div class="detail-photo">
+            <img src="${u}" alt="Evidencia" loading="lazy"
+              onclick="document.getElementById('lightboxImg').src='${u}';document.getElementById('lightbox').classList.remove('hidden')"/>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // Fotos de resolución
+  const fotosResHtml = fotosRes.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">✅ Fotos de resolución</div>
+      <div class="detail-photo-grid">
+        ${fotosRes.map(u => `
+          <div class="detail-photo">
+            <img src="${u}" alt="Resolución" loading="lazy"
+              onclick="document.getElementById('lightboxImg').src='${u}';document.getElementById('lightbox').classList.remove('hidden')"/>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  // Notas de resolución
+  const notasResHtml = r.notasResolucion ? `
+    <div class="detail-section">
+      <div class="detail-label">📝 Notas de resolución</div>
+      <div class="detail-value">${escHtml(r.notasResolucion)}</div>
+      ${r.resueltoPorNombre ? `<div style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem">Por: ${escHtml(r.resueltoPorNombre)}</div>` : ''}
+    </div>` : '';
+
+  document.getElementById('modalVerTitle').textContent = `${r.tipo === 'incidente' ? '🔴' : '🟢'} ${r.ubicacion}`;
+  document.getElementById('modalVerBody').innerHTML = `
+    ${timelineHtml}
+    <div class="detail-grid">
+      <div>
+        <div class="detail-label">Tipo</div>
+        <div class="detail-value">
+          <span class="badge ${r.tipo === 'incidente' ? 'badge-incidente' : 'badge-positivo'}">
+            ${r.tipo === 'incidente' ? 'Incidente' : 'Positivo'}
+          </span>
+        </div>
+      </div>
+      <div>
+        <div class="detail-label">Estado</div>
+        <div class="detail-value"><span class="badge ${estado.cls}">${estado.label}</span></div>
+      </div>
+      <div>
+        <div class="detail-label">Categoría</div>
+        <div class="detail-value">${cat}</div>
+      </div>
+      <div>
+        <div class="detail-label">Ubicación</div>
+        <div class="detail-value">${escHtml(r.ubicacion)}</div>
+      </div>
+      <div>
+        <div class="detail-label">Turno</div>
+        <div class="detail-value"><span class="badge badge-${r.turno}">${turnoLbl}</span></div>
+      </div>
+      <div>
+        <div class="detail-label">Fecha</div>
+        <div class="detail-value">${fecha}</div>
+      </div>
+      <div>
+        <div class="detail-label">Reportado por</div>
+        <div class="detail-value">${escHtml(r.creadoPorNombre || '—')}
+          ${r.creadoPorGrupo ? `<span style="color:var(--text-muted)"> · Grupo ${escHtml(r.creadoPorGrupo)}</span>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Descripción</div>
+      <div class="detail-value" style="line-height:1.7">${escHtml(r.descripcion)}</div>
+    </div>
+    ${fotosHtml}
+    ${fotosResHtml}
+    ${notasResHtml}
+    ${buildResolutionPanel(r)}
+  `;
+
+  // Footer de intendencia
+  const footer = document.getElementById('modalVerFooter');
+  footer.innerHTML = '';
+  const closeBtn2 = document.createElement('button');
+  closeBtn2.className = 'btn btn-ghost';
+  closeBtn2.textContent = 'Cerrar';
+  closeBtn2.addEventListener('click', closeModalVer);
+  footer.appendChild(closeBtn2);
+
+  if (currentProfile.role === 'intendencia' || currentProfile.role === 'admin') {
+    if (r.estado === 'pendiente') {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-warning';
+      btn.textContent = '🔧 Iniciar atención';
+      btn.addEventListener('click', () => cambiarEstado(r.id, 'en_atencion', btn));
+      footer.appendChild(btn);
+    }
+    if (r.estado === 'en_atencion') {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-success';
+      btn.textContent = '✅ Marcar resuelto';
+      btn.addEventListener('click', () => abrirResolucion(r, btn));
+      footer.appendChild(btn);
+    }
+  }
+
+  document.getElementById('modalVer').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function buildResolutionPanel(r) {
+  const isIntendencia = currentProfile.role === 'intendencia' || currentProfile.role === 'admin';
+  if (!isIntendencia || r.estado !== 'en_atencion') return '';
+  return `
+    <div class="resolution-panel" id="resPanel">
+      <div class="resolution-panel-title">🛠 Resolver este reporte</div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label" for="resNotas">Notas de resolución (opcional)</label>
+        <textarea class="form-textarea" id="resNotas" placeholder="Describe brevemente cómo se resolvió…" rows="2"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Foto de evidencia de resolución (opcional)</label>
+        <div class="foto-upload-area" id="resUploadArea" style="padding:1rem">
+          <input type="file" id="resFileInput" accept="image/*" capture="environment" multiple hidden />
+          <div class="foto-upload-icon" style="font-size:1.5rem">📷</div>
+          <div class="foto-upload-text">Toca para agregar foto</div>
+        </div>
+        <div class="foto-previews" id="resFotoPreviews"></div>
+      </div>
+    </div>`;
+}
+
+async function abrirResolucion(r, btn) {
+  // Activar upload de fotos de resolución
+  const resArea = document.getElementById('resUploadArea');
+  const resInput = document.getElementById('resFileInput');
+  const resPreviews = document.getElementById('resFotoPreviews');
+  if (!resArea || !resInput) {
+    await cambiarEstado(r.id, 'resuelto', btn);
+    return;
+  }
+  resArea.addEventListener('click', () => resInput.click());
+  let resFiles = [];
+  resInput.addEventListener('change', () => {
+    resFiles = [...resFiles, ...Array.from(resInput.files)].slice(0, 5);
+    renderFotoPreviews(resPreviews, resFiles, f => { resFiles = resFiles.filter(x => x !== f); renderFotoPreviews(resPreviews, resFiles, null); });
+  });
+
+  btn.textContent = '💾 Guardar resolución';
+  btn.removeEventListener('click', () => {});
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    try {
+      const notas = document.getElementById('resNotas')?.value || '';
+      // Subir fotos de resolución a Google Drive
+      const urls = [];
+      for (let i = 0; i < resFiles.length; i++) {
+        btn.textContent = `Subiendo foto ${i + 1}/${resFiles.length}…`;
+        const url = await uploadToDrive(resFiles[i], 'resoluciones');
+        urls.push(url);
+      }
+      await updateDoc(doc(db, 'reportes', r.id), {
+        estado:            'resuelto',
+        notasResolucion:   notas,
+        fotosResolucion:   urls,
+        resueltoPor:       currentUser.uid,
+        resueltoPorNombre: currentProfile.name,
+        actualizadoEn:     serverTimestamp(),
+      });
+      closeModalVer();
+      showToast('✅ Reporte marcado como resuelto.', 'success');
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = '✅ Marcar resuelto';
+      showToast('Error al guardar. Intenta de nuevo.', 'error');
+    }
+  }, { once: true });
+}
+
+async function cambiarEstado(reporteId, nuevoEstado, btn) {
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Guardando…';
+  try {
+    await updateDoc(doc(db, 'reportes', reporteId), {
+      estado:        nuevoEstado,
+      actualizadoEn: serverTimestamp(),
+      ...(nuevoEstado === 'en_atencion' ? {
+        atendidoPor:       currentUser.uid,
+        atendidoPorNombre: currentProfile.name,
+      } : {})
+    });
+    closeModalVer();
+    showToast(nuevoEstado === 'en_atencion' ? '🔧 Reporte en atención.' : '✅ Reporte resuelto.', 'success');
+  } catch (err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = orig;
+    showToast('Error al actualizar estado.', 'error');
+  }
+}
+
+function closeModalVer() {
+  document.getElementById('modalVer').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL: NUEVO REPORTE
+// ══════════════════════════════════════════════════════════════
+document.getElementById('btnNuevoReporte')?.addEventListener('click', openModalNuevo);
+
+function openModalNuevo() {
+  selectedTipo = null;
+  selectedCat  = null;
+  fotoFiles    = [];
+  document.getElementById('formNuevo').reset();
+  document.getElementById('fotoPreviews').innerHTML = '';
+  document.getElementById('nuevoError').classList.add('hidden');
+  document.querySelectorAll('.tipo-btn').forEach(b => b.className = 'tipo-btn');
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('modalNuevo').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModalNuevo() {
+  document.getElementById('modalNuevo').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('closeModalNuevo').addEventListener('click', closeModalNuevo);
+document.getElementById('cancelNuevo').addEventListener('click', closeModalNuevo);
+
+// Tipo buttons
+document.querySelectorAll('.tipo-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedTipo = btn.dataset.tipo;
+    document.querySelectorAll('.tipo-btn').forEach(b => b.className = 'tipo-btn');
+    btn.classList.add(`active-${selectedTipo}`);
+  });
+});
+
+// Categoria buttons
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedCat = btn.dataset.cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Foto upload
+const uploadArea  = document.getElementById('uploadArea');
+const fileInput   = document.getElementById('fileInput');
+const fotoPreviews = document.getElementById('fotoPreviews');
+
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  addFotos([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', () => addFotos([...fileInput.files]));
+
+function addFotos(newFiles) {
+  const imgs = newFiles.filter(f => f.type.startsWith('image/'));
+  fotoFiles = [...fotoFiles, ...imgs].slice(0, 5);
+  renderFotoPreviews(fotoPreviews, fotoFiles, f => {
+    fotoFiles = fotoFiles.filter(x => x !== f);
+    renderFotoPreviews(fotoPreviews, fotoFiles, null);
+  });
+  fileInput.value = '';
+}
+
+function renderFotoPreviews(container, files, onRemove) {
+  if (!container) return;
+  container.innerHTML = files.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="foto-preview-item">
+      <img src="${url}" alt="Vista previa ${i+1}" />
+      <button type="button" class="foto-preview-remove" data-idx="${i}" aria-label="Quitar foto">✕</button>
+    </div>`;
+  }).join('');
+  if (onRemove) {
+    container.querySelectorAll('.foto-preview-remove').forEach((btn, i) => {
+      btn.addEventListener('click', () => onRemove(files[i]));
+    });
+  }
+}
+
+// Submit nuevo reporte
+document.getElementById('formNuevo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = document.getElementById('nuevoError');
+  errEl.classList.add('hidden');
+
+  const ubicacion    = document.getElementById('selectUbicacion').value;
+  const descripcion  = document.getElementById('txtDescripcion').value.trim();
+
+  if (!selectedTipo) {
+    errEl.className = 'error-message';
+    errEl.textContent = 'Selecciona el tipo de reporte (Incidente o Positivo).';
+    errEl.classList.remove('hidden'); return;
+  }
+  if (!selectedCat) {
+    errEl.className = 'error-message';
+    errEl.textContent = 'Selecciona una categoría.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if (!ubicacion) {
+    errEl.className = 'error-message';
+    errEl.textContent = 'Selecciona la ubicación.';
+    errEl.classList.remove('hidden'); return;
+  }
+  if (!descripcion) {
+    errEl.className = 'error-message';
+    errEl.textContent = 'Escribe una descripción.';
+    errEl.classList.remove('hidden'); return;
+  }
+
+  const btn    = document.getElementById('submitNuevo');
+  const label  = document.getElementById('submitNuevoLabel');
+  const spin   = document.getElementById('submitNuevoSpinner');
+  btn.disabled = true;
+  label.textContent = 'Enviando…';
+  spin.classList.remove('hidden');
+
+  try {
+    // Subir fotos a Google Drive
+    const fotoURLs = [];
+    if (fotoFiles.length > 0) {
+      label.textContent = `Subiendo fotos (0/${fotoFiles.length})…`;
+      for (let i = 0; i < fotoFiles.length; i++) {
+        label.textContent = `Subiendo foto ${i + 1}/${fotoFiles.length}…`;
+        const url = await uploadToDrive(fotoFiles[i], 'evidencias');
+        fotoURLs.push(url);
+      }
+    }
+
+    // Crear documento
+    await addDoc(collection(db, 'reportes'), {
+      tipo:            selectedTipo,
+      categoria:       selectedCat,
+      ubicacion,
+      descripcion,
+      turno:           currentProfile.turno,
+      estado:          'pendiente',
+      creadoPor:       currentUser.uid,
+      creadoPorNombre: currentProfile.name,
+      creadoPorGrupo:  currentProfile.grupo || null,
+      creadoEn:        serverTimestamp(),
+      actualizadoEn:   serverTimestamp(),
+      fotos:           fotoURLs,
+      fotosResolucion: [],
+      notasResolucion: '',
+    });
+
+    closeModalNuevo();
+    showToast('✅ Reporte enviado correctamente.', 'success');
+  } catch (err) {
+    console.error(err);
+    errEl.className = 'error-message';
+    errEl.textContent = 'Error al enviar el reporte. Verifica tu conexión e intenta de nuevo.';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+    label.textContent = 'Enviar Reporte';
+    spin.classList.add('hidden');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════════════════════
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if (unsubReportes) unsubReportes();
+  await signOut(auth);
+  window.location.replace('index.html');
+});
+
+// ══════════════════════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════════════════════
+document.getElementById('closeLightbox').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.add('hidden');
+});
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('lightbox').classList.add('hidden');
+});
+
+// Close modals on overlay click
+document.getElementById('modalNuevo').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModalNuevo();
+});
+document.getElementById('modalVer').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModalVer();
+});
+document.getElementById('closeModalVer').addEventListener('click', closeModalVer);
+
+// Close on ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModalNuevo();
+    closeModalVer();
+    document.getElementById('lightbox').classList.add('hidden');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function formatDate(ts, full = false) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if (full) {
+    return d.toLocaleDateString('es-MX', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  const hoy = new Date();
+  const diff = Math.floor((hoy - d) / 86400000);
+  if (diff === 0) return 'Hoy ' + d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+  if (diff === 1) return 'Ayer';
+  if (diff < 7)  return `Hace ${diff} días`;
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function emptyState(icon, title, text) {
+  return `<div class="empty-state">
+    <div class="empty-state-icon">${icon}</div>
+    <div class="empty-state-title">${title}</div>
+    <div class="empty-state-text">${text}</div>
+  </div>`;
+}
+
+function showToast(msg, type = 'info') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; toast.style.transition = 'all .3s'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+</script>
+
+</body>
+</html>
