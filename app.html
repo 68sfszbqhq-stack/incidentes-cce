@@ -889,6 +889,11 @@ async function openModalVer(reporteId) {
           ${r.creadoPorGrupo ? `<span style="color:var(--text-muted)"> · Grupo ${escHtml(r.creadoPorGrupo)}</span>` : ''}
         </div>
       </div>
+      ${r.atendidoPorNombre ? `
+      <div>
+        <div class="detail-label">Atendido por</div>
+        <div class="detail-value">${escHtml(r.atendidoPorNombre)}</div>
+      </div>` : ''}
     </div>
     <div class="detail-section">
       <div class="detail-label">Descripción</div>
@@ -942,7 +947,7 @@ function buildResolutionPanel(r) {
         <textarea class="form-textarea" id="resNotas" placeholder="Describe brevemente cómo se resolvió…" rows="2"></textarea>
       </div>
       <div class="form-group" style="margin-bottom:1rem">
-        <label class="form-label">Foto de evidencia de resolución (opcional)</label>
+        <label class="form-label" style="font-weight: 700;">Foto de evidencia de resolución <span style="color:var(--danger)">* (Obligatorio)</span></label>
         <div class="foto-upload-area" id="resUploadArea" style="padding:1rem">
           <input type="file" id="resFileInput" accept="image/*" capture="environment" multiple hidden />
           <div class="foto-upload-icon" style="font-size:1.5rem">📷</div>
@@ -962,6 +967,11 @@ async function abrirResolucion(r, btn) {
     await cambiarEstado(r.id, 'resuelto', btn);
     return;
   }
+  
+  // Clonar el botón para eliminar escuchadores anteriores limpiamente
+  const saveBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(saveBtn, btn);
+  
   resArea.addEventListener('click', () => resInput.click());
   let resFiles = [];
   resInput.addEventListener('change', () => {
@@ -969,17 +979,25 @@ async function abrirResolucion(r, btn) {
     renderFotoPreviews(resPreviews, resFiles, f => { resFiles = resFiles.filter(x => x !== f); renderFotoPreviews(resPreviews, resFiles, null); });
   });
 
-  btn.textContent = '💾 Guardar resolución';
-  btn.removeEventListener('click', () => {});
-  btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    btn.textContent = 'Guardando…';
+  saveBtn.textContent = '💾 Guardar resolución';
+  saveBtn.addEventListener('click', async () => {
+    if (saveBtn.disabled) return;
+    
+    // Validar foto de evidencia de resolución obligatoria
+    if (resFiles.length === 0) {
+      showToast('⚠️ Debes agregar al menos una foto de evidencia para resolver.', 'error');
+      return;
+    }
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando…';
+    
     try {
       const notas = document.getElementById('resNotas')?.value || '';
       // Subir fotos de resolución a Google Drive
       const urls = [];
       for (let i = 0; i < resFiles.length; i++) {
-        btn.textContent = `Subiendo foto ${i + 1}/${resFiles.length}…`;
+        saveBtn.textContent = `Subiendo foto ${i + 1}/${resFiles.length}…`;
         const url = await uploadToDrive(resFiles[i], 'resoluciones');
         urls.push(url);
       }
@@ -995,11 +1013,11 @@ async function abrirResolucion(r, btn) {
       showToast('✅ Reporte marcado como resuelto.', 'success');
     } catch (err) {
       console.error(err);
-      btn.disabled = false;
-      btn.textContent = '✅ Marcar resuelto';
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Guardar resolución';
       showToast('Error al guardar. Intenta de nuevo.', 'error');
     }
-  }, { once: true });
+  });
 }
 
 async function cambiarEstado(reporteId, nuevoEstado, btn) {

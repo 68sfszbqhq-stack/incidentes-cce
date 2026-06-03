@@ -388,6 +388,7 @@ function renderLista(reportes) {
         ${thumbsResHtml}
         <div class="rcp-meta">
           <div class="rcp-meta-item">👤 <span>${nombre}${grupo}</span></div>
+          ${r.atendidoPorNombre ? `<div class="rcp-meta-item">🔧 <span>En atención por: ${esc(r.atendidoPorNombre)}</span></div>` : ''}
           ${r.resueltoPorNombre ? `<div class="rcp-meta-item">✅ <span>Resuelto por: ${esc(r.resueltoPorNombre)}</span></div>` : ''}
           ${r.notasResolucion   ? `<div class="rcp-meta-item" style="flex:1">📝 <span>${esc(r.notasResolucion)}</span></div>` : ''}
         </div>
