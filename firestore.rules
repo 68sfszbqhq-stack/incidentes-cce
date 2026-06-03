@@ -66,10 +66,10 @@ service cloud.firestore {
         (isDirectorVespertino() && resource.data.turno == 'vespertino') ||
         isIntendencia();
 
-      // Actualizar: intendencia puede cambiar estado y agregar fotos/notas de resolución
+      // Actualizar: intendencia, directoras y admin pueden cambiar estado y agregar fotos/notas de resolución
       allow update: if isAuth() && (
         isAdmin() ||
-        (isIntendencia() &&
+        ((isIntendencia() || isDirectorMatutino() || isDirectorVespertino()) &&
           // Solo puede modificar estos campos
           request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['estado','fotosResolucion','notasResolucion','actualizadoEn',

@@ -550,13 +550,18 @@ function initJefe(p) {
 
   const q = query(
     collection(db, 'reportes'),
-    where('creadoPor', '==', p.uid),
-    orderBy('creadoEn', 'desc')
+    where('creadoPor', '==', p.uid)
   );
 
   if (unsubReportes) unsubReportes();
   unsubReportes = onSnapshot(q, snap => {
     const reportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ordenar por creadoEn desc en memoria para evitar requerir índices compuestos en Firestore
+    reportes.sort((a, b) => {
+      const t1 = a.creadoEn ? (a.creadoEn.toDate ? a.creadoEn.toDate() : new Date(a.creadoEn)) : 0;
+      const t2 = b.creadoEn ? (b.creadoEn.toDate ? b.creadoEn.toDate() : new Date(b.creadoEn)) : 0;
+      return t2 - t1;
+    });
     // Stats
     document.getElementById('jSTotal').textContent = reportes.length;
     document.getElementById('jSPend').textContent  = reportes.filter(r => r.estado === 'pendiente').length;
@@ -588,13 +593,18 @@ function initDirectora(p) {
 
   const q = query(
     collection(db, 'reportes'),
-    where('turno', '==', turno),
-    orderBy('creadoEn', 'desc')
+    where('turno', '==', turno)
   );
 
   if (unsubReportes) unsubReportes();
   unsubReportes = onSnapshot(q, snap => {
     allReportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ordenar por creadoEn desc en memoria para evitar requerir índices compuestos en Firestore
+    allReportes.sort((a, b) => {
+      const t1 = a.creadoEn ? (a.creadoEn.toDate ? a.creadoEn.toDate() : new Date(a.creadoEn)) : 0;
+      const t2 = b.creadoEn ? (b.creadoEn.toDate ? b.creadoEn.toDate() : new Date(b.creadoEn)) : 0;
+      return t2 - t1;
+    });
     applyFiltersDirectora();
   }, err => {
     console.error(err);
@@ -893,7 +903,8 @@ async function openModalVer(reporteId) {
   closeBtn2.addEventListener('click', closeModalVer);
   footer.appendChild(closeBtn2);
 
-  if (currentProfile.role === 'intendencia' || currentProfile.role === 'admin') {
+  const canSolve = currentProfile.role === 'intendencia' || currentProfile.role === 'admin' || currentProfile.role === 'directora_matutino' || currentProfile.role === 'directora_vespertino';
+  if (canSolve) {
     if (r.estado === 'pendiente') {
       const btn = document.createElement('button');
       btn.className = 'btn btn-warning';
@@ -915,8 +926,8 @@ async function openModalVer(reporteId) {
 }
 
 function buildResolutionPanel(r) {
-  const isIntendencia = currentProfile.role === 'intendencia' || currentProfile.role === 'admin';
-  if (!isIntendencia || r.estado !== 'en_atencion') return '';
+  const canSolve = currentProfile.role === 'intendencia' || currentProfile.role === 'admin' || currentProfile.role === 'directora_matutino' || currentProfile.role === 'directora_vespertino';
+  if (!canSolve || r.estado !== 'en_atencion') return '';
   return `
     <div class="resolution-panel" id="resPanel">
       <div class="resolution-panel-title">🛠 Resolver este reporte</div>
