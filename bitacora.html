@@ -248,6 +248,12 @@
 
 </main>
 
+<!-- Lightbox publico -->
+<div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Vista de imagen">
+  <button class="lightbox-close" id="closeLightbox" aria-label="Cerrar imagen">✕</button>
+  <img id="lightboxImg" src="" alt="Evidencia fotográfica" />
+</div>
+
 <script type="module">
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {
@@ -339,6 +345,30 @@ function renderLista(reportes) {
     const fecha     = r.creadoEn ? formatDate(r.creadoEn) : '—';
     const nombre    = esc(r.creadoPorNombre || '—');
     const grupo     = r.creadoPorGrupo ? ` · Grupo ${esc(r.creadoPorGrupo)}` : '';
+    const fotos     = r.fotos || [];
+    const fotosRes  = r.fotosResolucion || [];
+
+    let thumbsHtml = '';
+    if (fotos.length > 0) {
+      thumbsHtml = `
+        <div style="margin-top: 0.75rem; margin-bottom: 0.75rem;">
+          <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.05em;">📷 Fotos de evidencia</div>
+          <div class="reporte-thumb">
+            ${fotos.map(u => `<img src="${u}" alt="Evidencia" loading="lazy" class="click-photo" style="cursor: pointer;" />`).join('')}
+          </div>
+        </div>`;
+    }
+
+    let thumbsResHtml = '';
+    if (fotosRes.length > 0) {
+      thumbsResHtml = `
+        <div style="margin-top: 0.75rem; margin-bottom: 0.75rem;">
+          <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.05em;">✅ Fotos de resolución</div>
+          <div class="reporte-thumb">
+            ${fotosRes.map(u => `<img src="${u}" alt="Resolución" loading="lazy" class="click-photo" style="cursor: pointer;" />`).join('')}
+          </div>
+        </div>`;
+    }
 
     return `
       <article class="reporte-card-publico ${r.tipo}">
@@ -354,6 +384,8 @@ function renderLista(reportes) {
         </div>
         <div class="rcp-ubicacion">${esc(r.ubicacion)} · <span style="font-weight:400;opacity:.7">${cat}</span></div>
         <div class="rcp-desc">${esc(r.descripcion)}</div>
+        ${thumbsHtml}
+        ${thumbsResHtml}
         <div class="rcp-meta">
           <div class="rcp-meta-item">👤 <span>${nombre}${grupo}</span></div>
           ${r.resueltoPorNombre ? `<div class="rcp-meta-item">✅ <span>Resuelto por: ${esc(r.resueltoPorNombre)}</span></div>` : ''}
@@ -379,6 +411,28 @@ function formatDate(ts) {
     });
   } catch { return '—'; }
 }
+
+// ── Lightbox Event Listeners ──────────────────────
+document.getElementById('bLista').addEventListener('click', e => {
+  if (e.target.classList.contains('click-photo')) {
+    document.getElementById('lightboxImg').src = e.target.src;
+    document.getElementById('lightbox').classList.remove('hidden');
+  }
+});
+
+document.getElementById('closeLightbox').addEventListener('click', () => {
+  document.getElementById('lightbox').classList.add('hidden');
+});
+
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('lightbox').classList.add('hidden');
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('lightbox').classList.add('hidden');
+  }
+});
 </script>
 
 </body>
