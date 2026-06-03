@@ -56,17 +56,15 @@ service cloud.firestore {
         (isAdmin() || request.resource.data.creadoPor == request.auth.uid);
 
       // Leer:
+      // — Sin sesión: lectura pública para la bitácora
+      // — Con sesión: cada rol ve solo lo que le corresponde
       allow read: if
-        // Lectura pública (bitácora) — solo campos no sensibles
-        !request.auth == null ||
-        // Usuarios autenticados con rol
-        (isAuth() && (
-          isAdmin() ||
-          (isJefe()               && resource.data.creadoPor == request.auth.uid) ||
-          (isDirectorMatutino()   && resource.data.turno == 'matutino') ||
-          (isDirectorVespertino() && resource.data.turno == 'vespertino') ||
-          isIntendencia()
-        ));
+        request.auth == null ||   // público (bitácora sin login)
+        isAdmin() ||
+        (isJefe()               && resource.data.creadoPor == request.auth.uid) ||
+        (isDirectorMatutino()   && resource.data.turno == 'matutino') ||
+        (isDirectorVespertino() && resource.data.turno == 'vespertino') ||
+        isIntendencia();
 
       // Actualizar: intendencia puede cambiar estado y agregar fotos/notas de resolución
       allow update: if isAuth() && (
