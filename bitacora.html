@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitácora Pública — C.C. Carlos Camacho Espíritu</title>
+  <meta name="description" content="Bitácora pública de reportes de incidentes y condiciones del plantel Carlos Camacho Espíritu." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* ── Bitácora overrides ─────────────────────────── */
+    .bitacora-header {
+      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .bitacora-brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .bitacora-brand-icon { font-size: 1.75rem; }
+    .bitacora-brand h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .bitacora-brand p {
+      font-size: .75rem;
+      color: var(--text-muted);
+    }
+    .badge-publica {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      padding: .25rem .6rem;
+      border-radius: 999px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .bitacora-main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+    .bitacora-intro {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .bitacora-intro h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: .5rem;
+    }
+    .bitacora-intro p {
+      color: var(--text-muted);
+      font-size: .9rem;
+    }
+    .bitacora-filters {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .bitacora-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .75rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 600px) {
+      .bitacora-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    .reporte-card-publico {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .reporte-card-publico:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      border-color: var(--primary);
+    }
+    .reporte-card-publico.incidente { border-left: 4px solid #ef4444; }
+    .reporte-card-publico.positivo  { border-left: 4px solid #10b981; }
+    .rcp-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: .75rem;
+    }
+    .rcp-badges { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .rcp-fecha  { font-size: .75rem; color: var(--text-muted); white-space: nowrap; }
+    .rcp-ubicacion {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: .4rem;
+    }
+    .rcp-desc {
+      font-size: .875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: .75rem;
+    }
+    .rcp-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: .78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: .75rem;
+      flex-wrap: wrap;
+    }
+    .rcp-meta-item { display: flex; align-items: center; gap: .3rem; }
+    .bitacora-empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+    .bitacora-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .login-link-bar {
+      background: linear-gradient(135deg, rgba(99,102,241,.15), rgba(139,92,246,.1));
+      border: 1px solid rgba(99,102,241,.3);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .login-link-bar p {
+      font-size: .85rem;
+      color: var(--text-secondary);
+    }
+    .loading-bar {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+    .loading-bar .spinner {
+      width: 2rem; height: 2rem;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="app-layout">
+
+<!-- ── HEADER ────────────────────────────────────── -->
+<header class="bitacora-header">
+  <div class="bitacora-brand">
+    <div class="bitacora-brand-icon">📋</div>
+    <div>
+      <h1>Carlos Camacho Espíritu</h1>
+      <p>Bitácora de Reportes</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+    <span class="badge-publica">Vista Pública</span>
+    <a href="index.html" class="btn btn-ghost btn-sm">🔐 Iniciar sesión</a>
+  </div>
+</header>
+
+<!-- ── CONTENIDO ─────────────────────────────────── -->
+<main class="bitacora-main">
+
+  <div class="bitacora-intro">
+    <h2>📋 Bitácora de Incidentes</h2>
+    <p>Consulta pública del estado de reportes del plantel — ambos turnos</p>
+  </div>
+
+  <!-- Aviso de acceso -->
+  <div class="login-link-bar">
+    <p>🔒 ¿Eres parte del personal? Inicia sesión para crear y gestionar reportes.</p>
+    <a href="index.html" class="btn btn-primary btn-sm">Iniciar sesión →</a>
+  </div>
+
+  <!-- Stats públicas -->
+  <div class="bitacora-stats" id="bStats">
+    <div class="stat-card total">
+      <div class="stat-value" id="bSTotal">—</div>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-card pendiente">
+      <div class="stat-value" id="bSPend">—</div>
+      <div class="stat-label">Pendientes</div>
+    </div>
+    <div class="stat-card atencion">
+      <div class="stat-value" id="bSAten">—</div>
+      <div class="stat-label">En Atención</div>
+    </div>
+    <div class="stat-card resuelto">
+      <div class="stat-value" id="bSRes">—</div>
+      <div class="stat-label">Resueltos</div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bitacora-filters">
+    <select class="form-select" id="bFiltroTipo" aria-label="Filtrar por tipo">
+      <option value="">Todos los tipos</option>
+      <option value="incidente">🔴 Incidente</option>
+      <option value="positivo">🟢 Positivo</option>
+    </select>
+    <select class="form-select" id="bFiltroEstado" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="en_atencion">En Atención</option>
+      <option value="resuelto">Resuelto</option>
+    </select>
+    <select class="form-select" id="bFiltroTurno" aria-label="Filtrar por turno">
+      <option value="">Ambos turnos</option>
+      <option value="matutino">🌅 Matutino</option>
+      <option value="vespertino">🌇 Vespertino</option>
+    </select>
+  </div>
+
+  <!-- Lista -->
+  <div id="bLista">
+    <div class="loading-bar">
+      <div class="spinner"></div>
+      <p>Cargando reportes…</p>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, collection, query, orderBy, onSnapshot, where
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { firebaseConfig } from './js/firebase-config.js';
+
+// ── Init ──────────────────────────────────────────
+const fbApp = initializeApp(firebaseConfig);
+const db    = getFirestore(fbApp);
+
+// ── Constantes ────────────────────────────────────
+const ESTADOS = {
+  pendiente:   { label: 'Pendiente',   cls: 'badge-pendiente' },
+  en_atencion: { label: 'En Atención', cls: 'badge-en_atencion' },
+  resuelto:    { label: 'Resuelto',    cls: 'badge-resuelto' },
+};
+
+const CATEGORIAS = {
+  mobiliario: '🪑 Mobiliario',
+  bano:       '🚽 Baño',
+  salon:      '🏫 Salón',
+  pasillo:    '🚶 Pasillo',
+  cancha:     '🏟️ Cancha',
+  patio:      '🌳 Patio / Área común',
+};
+
+// ── Estado ────────────────────────────────────────
+let todosLosReportes = [];
+
+// ── Escuchar reportes en tiempo real ──────────────
+const q = query(collection(db, 'reportes'), orderBy('creadoEn', 'desc'));
+
+onSnapshot(q, snap => {
+  todosLosReportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  aplicarFiltros();
+}, err => {
+  console.error(err);
+  document.getElementById('bLista').innerHTML = `
+    <div class="bitacora-empty">
+      <div class="bitacora-empty-icon">⚠️</div>
+      <p>No se pudieron cargar los reportes.<br>
+         <small>Las reglas de Firestore deben permitir lectura pública.</small>
+      </p>
+    </div>`;
+});
+
+// ── Filtros ───────────────────────────────────────
+['bFiltroTipo','bFiltroEstado','bFiltroTurno'].forEach(id => {
+  document.getElementById(id).addEventListener('change', aplicarFiltros);
+});
+
+function aplicarFiltros() {
+  let reportes = [...todosLosReportes];
+  const tipo   = document.getElementById('bFiltroTipo').value;
+  const estado = document.getElementById('bFiltroEstado').value;
+  const turno  = document.getElementById('bFiltroTurno').value;
+
+  if (tipo)   reportes = reportes.filter(r => r.tipo === tipo);
+  if (estado) reportes = reportes.filter(r => r.estado === estado);
+  if (turno)  reportes = reportes.filter(r => r.turno === turno);
+
+  // Stats
+  document.getElementById('bSTotal').textContent = reportes.length;
+  document.getElementById('bSPend').textContent  = reportes.filter(r => r.estado === 'pendiente').length;
+  document.getElementById('bSAten').textContent  = reportes.filter(r => r.estado === 'en_atencion').length;
+  document.getElementById('bSRes').textContent   = reportes.filter(r => r.estado === 'resuelto').length;
+
+  renderLista(reportes);
+}
+
+// ── Render ────────────────────────────────────────
+function renderLista(reportes) {
+  const el = document.getElementById('bLista');
+
+  if (reportes.length === 0) {
+    el.innerHTML = `
+      <div class="bitacora-empty">
+        <div class="bitacora-empty-icon">📋</div>
+        <p>No hay reportes con los filtros seleccionados.</p>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = reportes.map(r => {
+    const estado    = ESTADOS[r.estado] || { label: r.estado, cls: '' };
+    const cat       = CATEGORIAS[r.categoria] || r.categoria || '';
+    const turnoLbl  = r.turno === 'matutino' ? '🌅 Matutino' : '🌇 Vespertino';
+    const fecha     = r.creadoEn ? formatDate(r.creadoEn) : '—';
+    const nombre    = esc(r.creadoPorNombre || '—');
+    const grupo     = r.creadoPorGrupo ? ` · Grupo ${esc(r.creadoPorGrupo)}` : '';
+
+    return `
+      <article class="reporte-card-publico ${r.tipo}">
+        <div class="rcp-top">
+          <div class="rcp-badges">
+            <span class="badge ${r.tipo === 'incidente' ? 'badge-incidente' : 'badge-positivo'}">
+              ${r.tipo === 'incidente' ? '🔴 Incidente' : '🟢 Positivo'}
+            </span>
+            <span class="badge ${estado.cls}">${estado.label}</span>
+            <span class="badge badge-${r.turno}">${turnoLbl}</span>
+          </div>
+          <span class="rcp-fecha">${fecha}</span>
+        </div>
+        <div class="rcp-ubicacion">${esc(r.ubicacion)} · <span style="font-weight:400;opacity:.7">${cat}</span></div>
+        <div class="rcp-desc">${esc(r.descripcion)}</div>
+        <div class="rcp-meta">
+          <div class="rcp-meta-item">👤 <span>${nombre}${grupo}</span></div>
+          ${r.resueltoPorNombre ? `<div class="rcp-meta-item">✅ <span>Resuelto por: ${esc(r.resueltoPorNombre)}</span></div>` : ''}
+          ${r.notasResolucion   ? `<div class="rcp-meta-item" style="flex:1">📝 <span>${esc(r.notasResolucion)}</span></div>` : ''}
+        </div>
+      </article>`;
+  }).join('');
+}
+
+// ── Helpers ───────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(ts) {
+  try {
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('es-MX', {
+      day:'2-digit', month:'short', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+  } catch { return '—'; }
+}
+</script>
+
+</body>
+</html>

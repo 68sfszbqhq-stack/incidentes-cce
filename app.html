@@ -98,6 +98,9 @@
           <h2 class="panel-title" id="dirTitle">Panel Directora</h2>
           <p class="panel-subtitle" id="dirSubtitle">Turno —</p>
         </div>
+        <button class="btn btn-primary" id="btnNuevoReporteDir">
+          <span aria-hidden="true">＋</span> Nuevo Reporte
+        </button>
       </div>
     </div>
 
@@ -579,6 +582,9 @@ function initDirectora(p) {
   const emoji  = turno === 'matutino' ? '🌅' : '🌇';
   document.getElementById('dirTitle').textContent    = `Panel Directora`;
   document.getElementById('dirSubtitle').textContent = `${emoji} Turno ${turno.charAt(0).toUpperCase() + turno.slice(1)}`;
+
+  // Botón nuevo reporte para directora
+  document.getElementById('btnNuevoReporteDir').addEventListener('click', () => openModalNuevo());
 
   const q = query(
     collection(db, 'reportes'),
