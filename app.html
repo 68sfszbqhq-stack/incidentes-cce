@@ -172,30 +172,72 @@
       <div class="panel-hero-top">
         <div>
           <h2 class="panel-title" id="intTitle">Panel Intendencia</h2>
-          <p class="panel-subtitle">Gestiona y resuelve los reportes del plantel</p>
+          <p class="panel-subtitle">Gestiona, reporta y resuelve los incidentes del plantel</p>
         </div>
+        <button class="btn btn-primary" id="btnNuevoReporteInt">
+          <span aria-hidden="true">＋</span> Nuevo Reporte
+        </button>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs-nav" role="tablist" aria-label="Secciones de reportes">
-      <button class="tab-btn active" role="tab" aria-selected="true"
-        data-tab="pendientes" id="tabPend">
-        Pendientes <span class="tab-count" id="cntPend">0</span>
-      </button>
-      <button class="tab-btn" role="tab" aria-selected="false"
-        data-tab="en_atencion" id="tabAten">
-        En Atención <span class="tab-count" id="cntAten">0</span>
-      </button>
-      <button class="tab-btn" role="tab" aria-selected="false"
-        data-tab="resueltos" id="tabRes">
-        Resueltos <span class="tab-count" id="cntRes">0</span>
-      </button>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-value" id="iSTotal">0</div>
+        <div class="stat-label">Total reportes</div>
+      </div>
+      <div class="stat-card pendiente">
+        <div class="stat-value" id="iSPend">0</div>
+        <div class="stat-label">Pendientes</div>
+      </div>
+      <div class="stat-card atencion">
+        <div class="stat-value" id="iSAten">0</div>
+        <div class="stat-label">En Atención</div>
+      </div>
+      <div class="stat-card resuelto">
+        <div class="stat-value" id="iSRes">0</div>
+        <div class="stat-label">Resueltos</div>
+      </div>
     </div>
 
-    <div id="intReportesPend" class="reportes-list" role="tabpanel"></div>
-    <div id="intReportesAten" class="reportes-list hidden" role="tabpanel"></div>
-    <div id="intReportesRes"  class="reportes-list hidden" role="tabpanel"></div>
+    <!-- Filtros -->
+    <div class="filters-bar" role="search" aria-label="Filtros de reportes">
+      <select class="form-select" id="filtroTipoInt" aria-label="Filtrar por tipo">
+        <option value="">Todos los tipos</option>
+        <option value="incidente">🔴 Incidente</option>
+        <option value="positivo">🟢 Positivo</option>
+      </select>
+      <select class="form-select" id="filtroEstadoInt" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="en_atencion">En Atención</option>
+        <option value="resuelto">Resuelto</option>
+      </select>
+      <select class="form-select" id="filtroTurnoInt" aria-label="Filtrar por turno">
+        <option value="">Todos los turnos</option>
+        <option value="matutino">🌅 Turno Matutino</option>
+        <option value="vespertino">🌇 Turno Vespertino</option>
+      </select>
+      <select class="form-select" id="filtroUbicacionInt" aria-label="Filtrar por ubicación">
+        <option value="">Todas las zonas</option>
+        <option value="Salón 1°">Salón 1°</option>
+        <option value="Salón 2°">Salón 2°</option>
+        <option value="Salón 3°">Salón 3°</option>
+        <option value="Baños">Baños</option>
+        <option value="Canchas">Canchas</option>
+        <option value="Mesas / Comedor">Mesas / Comedor</option>
+        <option value="Pasillos">Pasillos</option>
+        <option value="Patio General">Patio General</option>
+      </select>
+      <select class="form-select" id="filtroFechaInt" aria-label="Filtrar por fecha">
+        <option value="">Cualquier fecha</option>
+        <option value="hoy">Hoy</option>
+        <option value="semana">Esta semana</option>
+        <option value="mes">Este mes</option>
+      </select>
+    </div>
+
+    <div id="intReportesList" class="reportes-list"></div>
   </section>
 
   <!-- ┌─────────────────────────────────────────────
@@ -663,46 +705,68 @@ function applyFiltersDirectora() {
 function initIntendencia(p) {
   document.getElementById('panelIntendencia').classList.remove('hidden');
 
+  // Botón nuevo reporte para intendencia
+  document.getElementById('btnNuevoReporteInt').addEventListener('click', () => openModalNuevo());
+
   const q = query(
-    collection(db, 'reportes'),
-    orderBy('creadoEn', 'desc')
+    collection(db, 'reportes')
   );
 
   if (unsubReportes) unsubReportes();
   unsubReportes = onSnapshot(q, snap => {
-    const reportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const pend = reportes.filter(r => r.estado === 'pendiente');
-    const aten = reportes.filter(r => r.estado === 'en_atencion');
-    const res  = reportes.filter(r => r.estado === 'resuelto');
-
-    document.getElementById('cntPend').textContent = pend.length;
-    document.getElementById('cntAten').textContent = aten.length;
-    document.getElementById('cntRes').textContent  = res.length;
-
-    renderReportesList('intReportesPend', pend, 'intendencia');
-    renderReportesList('intReportesAten', aten, 'intendencia');
-    renderReportesList('intReportesRes',  res,  'intendencia');
+    allReportes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ordenar por creadoEn desc en memoria para evitar requerir índices compuestos en Firestore
+    allReportes.sort((a, b) => {
+      const t1 = a.creadoEn ? (a.creadoEn.toDate ? a.creadoEn.toDate() : new Date(a.creadoEn)) : 0;
+      const t2 = b.creadoEn ? (b.creadoEn.toDate ? b.creadoEn.toDate() : new Date(b.creadoEn)) : 0;
+      return t2 - t1;
+    });
+    applyFiltersIntendencia();
   }, err => {
     console.error(err);
   });
 
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected','false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected','true');
-      activeTab = btn.dataset.tab;
-      ['intReportesPend','intReportesAten','intReportesRes'].forEach(id =>
-        document.getElementById(id).classList.add('hidden')
-      );
-      const tabMap = { pendientes:'intReportesPend', en_atencion:'intReportesAten', resueltos:'intReportesRes' };
-      document.getElementById(tabMap[activeTab]).classList.remove('hidden');
-    });
+  // Filtros
+  ['filtroTipoInt','filtroEstadoInt','filtroTurnoInt','filtroUbicacionInt','filtroFechaInt'].forEach(id => {
+    document.getElementById(id).addEventListener('change', applyFiltersIntendencia);
   });
+}
+
+function applyFiltersIntendencia() {
+  let filtered = [...allReportes];
+  const tipo      = document.getElementById('filtroTipoInt').value;
+  const estado    = document.getElementById('filtroEstadoInt').value;
+  const turnoFilter = document.getElementById('filtroTurnoInt').value;
+  const ubicacion = document.getElementById('filtroUbicacionInt').value;
+  const fecha     = document.getElementById('filtroFechaInt').value;
+
+  if (tipo)        filtered = filtered.filter(r => r.tipo === tipo);
+  if (estado)      filtered = filtered.filter(r => r.estado === estado);
+  if (turnoFilter) filtered = filtered.filter(r => r.turno === turnoFilter);
+  if (ubicacion)   filtered = filtered.filter(r => r.ubicacion === ubicacion);
+
+  if (fecha) {
+    const now  = new Date();
+    const hoy  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lun  = new Date(hoy); lun.setDate(hoy.getDate() - hoy.getDay() + 1);
+    const mes  = new Date(now.getFullYear(), now.getMonth(), 1);
+    filtered = filtered.filter(r => {
+      if (!r.creadoEn) return false;
+      const d = r.creadoEn.toDate ? r.creadoEn.toDate() : new Date(r.creadoEn);
+      if (fecha === 'hoy')    return d >= hoy;
+      if (fecha === 'semana') return d >= lun;
+      if (fecha === 'mes')    return d >= mes;
+      return true;
+    });
+  }
+
+  // Stats
+  document.getElementById('iSTotal').textContent = filtered.length;
+  document.getElementById('iSPend').textContent  = filtered.filter(r => r.estado === 'pendiente').length;
+  document.getElementById('iSAten').textContent  = filtered.filter(r => r.estado === 'en_atencion').length;
+  document.getElementById('iSRes').textContent   = filtered.filter(r => r.estado === 'resuelto').length;
+
+  renderReportesList('intReportesList', filtered, 'intendencia');
 }
 
 // ══════════════════════════════════════════════════════════════

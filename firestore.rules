@@ -46,8 +46,8 @@ service cloud.firestore {
     // ── Colección: reportes ───────────────────────────────────
     match /reportes/{reporteId} {
 
-      // Crear: jefes de grupo, directoras y admin
-      allow create: if isAuth() && (isJefe() || isDirectorMatutino() || isDirectorVespertino() || isAdmin()) &&
+      // Crear: jefes de grupo, directoras, intendencia y admin
+      allow create: if isAuth() && (isJefe() || isDirectorMatutino() || isDirectorVespertino() || isIntendencia() || isAdmin()) &&
         // Validar campos obligatorios
         request.resource.data.keys().hasAll(['tipo','categoria','ubicacion','descripcion','turno','estado','creadoPor','creadoEn']) &&
         request.resource.data.tipo    in ['incidente','positivo'] &&
